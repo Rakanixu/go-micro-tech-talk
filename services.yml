@@ -1,0 +1,96 @@
+# 1. Create Docker network 'docker network create go-micro-tech-talk'
+version: '2'
+services:
+  elasticsearch:
+   image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
+   hostname: "elasticsearch"
+   networks:
+     - go-micro-tech-talk
+   ports:
+     - "9200:9200"
+     - "9300:9300"
+   environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "http.cors.enabled=true"
+      - "http.cors.allow-origin=\"*\""
+      - "http.cors.allow-headers=Authorization"
+      - "xpack.security.enabled=false"
+   ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+   mem_limit: 1g
+   cap_add:
+   - IPC_LOCK
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.2.0
+    hostname: "kibana"
+    networks:
+      - go-micro-tech-talk
+    links:
+      - elasticsearch
+    ports:
+      - 5601:5601
+
+  nats:
+    image: nats:latest
+    networks:
+      - go-micro-tech-talk
+    entrypoint: "/gnatsd -m 8222"
+    expose:
+      - "4222"
+    ports:
+      - "8222:8222"
+
+  rabbitmq:
+    image: rabbitmq:latest
+    hostname: "rabbitmq"
+    networks:
+      - go-micro-tech-talk
+    #expose:
+    #  - "5672"
+    ports:
+      - "5672:5672"
+      - "15672:15672"  
+
+  registry:
+    command: -server -bootstrap -rejoin -log-level err
+    image: progrium/consul:latest
+    networks:
+      - go-micro-tech-talk
+    ports:
+    - "8300:8300"
+    - "8400:8400"
+    - "8500:8500"
+    - "8600:53/udp"
+
+  web:
+    command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --enable_stats=true  --selector=cache --web_cors=* web
+    image: microhq/micro
+    networks:
+      - go-micro-tech-talk
+    links:
+    - registry
+    - nats
+    ports:
+    - "8082:8082"
+
+  api:
+    command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --api_namespace=com.go-micro-tech-talk.api api --handler=proxy
+    image: microhq/micro
+    networks:
+      - go-micro-tech-talk
+    links:
+    - registry
+    ports:
+    - "8080:8080"    
+
+networks:
+  go-micro-tech-talk:
+    external: true

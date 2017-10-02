@@ -1,0 +1,56 @@
+version: '2'
+services:
+#--broker=rabbitmq --broker_address=172.20.0.5:5672
+  flight-srv:
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+    image: go-micro-tech-talk/flight
+    external_links:
+    - registry
+    - rabbitmq
+    - nats
+    - elasticsearch
+    expose:
+      - "9090"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+  flight-api:
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+    image: go-micro-tech-talk/flight-api
+    external_links:
+    - registry
+    expose:
+      - "9090"
+
+  orchestrator-srv:
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+    image: go-micro-tech-talk/orchestrator
+    external_links:
+    - registry
+    - rabbitmq
+    - nats
+    expose:
+      - "9090"
+
+  indexer-srv:
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+    image: go-micro-tech-talk/indexer
+    external_links:
+    - registry
+    - rabbitmq
+    - nats
+    - elasticsearch
+    expose:
+      - "9090"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+  static-server:
+    image: go-micro-tech-talk/static-server
+    ports:
+      - "4004:80"
+      
+networks:
+  default:
+    external:
+      name: go-micro-tech-talk      

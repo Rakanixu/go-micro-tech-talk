@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package proto.flight;
+
+service Service {
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}       
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message ReadRequest {
+  string id = 1;
+}
+
+message ReadResponse {
+  Flight flight = 1;
+}
+
+message SearchRequest {
+  string query = 1;
+}
+
+message SearchResponse {
+  repeated Flight flights = 1;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string info = 1;
+}
+
+message Flight {
+  string guid = 1;
+	string origin = 2;
+	string destiny = 3;
+	string aircraft = 4;
+}
