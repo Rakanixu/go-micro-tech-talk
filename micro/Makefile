@@ -1,4 +1,4 @@
-default: clean build-linux docker
+default: clean dependencies build-linux docker
 
 clean:
 	rm -rf micro
