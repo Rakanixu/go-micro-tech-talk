@@ -1,9 +1,10 @@
-version: '2'
+version: '3'
 services:
-#--broker=rabbitmq --broker_address=172.20.0.5:5672
   flight-srv:
-    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090 --transport=tcp 
     image: go-micro-tech-talk/flight
+    networks:
+      - gomicrotechtalk_go-micro-tech-talk
     external_links:
     - registry
     - rabbitmq
@@ -15,16 +16,20 @@ services:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
 
   flight-api:
-    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090 --transport=tcp 
     image: go-micro-tech-talk/flight-api
+    networks:
+      - gomicrotechtalk_go-micro-tech-talk
     external_links:
     - registry
     expose:
       - "9090"
 
   orchestrator-srv:
-    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090 --broker=nats --broker_address=nats:4222 --transport=grpc
     image: go-micro-tech-talk/orchestrator
+    networks:
+      - gomicrotechtalk_go-micro-tech-talk
     external_links:
     - registry
     - rabbitmq
@@ -32,9 +37,11 @@ services:
     expose:
       - "9090"
 
-  indexer-srv:
-    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090
+  indexer-srv_1:
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090 --broker=nats --broker_address=nats:4222 --transport=grpc
     image: go-micro-tech-talk/indexer
+    networks:
+      - gomicrotechtalk_go-micro-tech-talk
     external_links:
     - registry
     - rabbitmq
@@ -42,15 +49,38 @@ services:
     - elasticsearch
     expose:
       - "9090"
+    #deploy:
+      #mode: replicated
+      #replicas: 2
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
 
+  indexer-srv_2:
+    command: --registry_address=registry:8500 --server_address=0.0.0.0:9090 --broker=nats --broker_address=nats:4222 --transport=tcp
+    image: go-micro-tech-talk/indexer
+    networks:
+      - gomicrotechtalk_go-micro-tech-talk
+    external_links:
+    - registry
+    - rabbitmq
+    - nats
+    - elasticsearch
+    expose:
+      - "9090"
+    #deploy:
+      #mode: replicated
+      #replicas: 2
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200      
+
   static-server:
     image: go-micro-tech-talk/static-server
+    hostname: "static-server"
+    networks:
+      - gomicrotechtalk_go-micro-tech-talk
     ports:
       - "4004:80"
       
 networks:
-  default:
-    external:
-      name: go-micro-tech-talk      
+  gomicrotechtalk_go-micro-tech-talk:
+    external: true    

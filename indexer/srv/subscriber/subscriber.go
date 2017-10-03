@@ -54,6 +54,7 @@ func (e *taskHandler) IndexFlights(ctx context.Context, msg *messages.IndexFligh
 func (e *taskHandler) queueListener(wID int) {
 	for m := range e.msgChan {
 		if err := processmsg(m); err != nil {
+			log.Println("Error processing index flight message: ", err)
 			m.err <- err
 		}
 		// Successful
@@ -96,7 +97,7 @@ func processmsg(m msgChan) error {
 			return err
 		}
 
-		log.Println(string(b))
+		log.Println("Flight indexed with ID ", v.GUID)
 	}
 
 	return nil

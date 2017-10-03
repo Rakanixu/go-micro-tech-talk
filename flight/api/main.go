@@ -7,6 +7,7 @@ import (
 	"github.com/Rakanixu/go-micro-tech-talk/flight/api/handler"
 	"github.com/Rakanixu/go-micro-tech-talk/flight/srv/proto/flight"
 	"github.com/Rakanixu/go-micro-tech-talk/lib/globals"
+	_ "github.com/Rakanixu/go-micro-tech-talk/lib/plugins"
 	"github.com/Rakanixu/go-micro-tech-talk/lib/wrappers"
 	"github.com/emicklei/go-restful"
 	"github.com/micro/go-micro/client"

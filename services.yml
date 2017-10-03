@@ -53,10 +53,10 @@ services:
     hostname: "rabbitmq"
     networks:
       - go-micro-tech-talk
-    #expose:
-    #  - "5672"
+    expose:
+      - "5672"
     ports:
-      - "5672:5672"
+      #- "5672:5672"
       - "15672:15672"  
 
   registry:
@@ -71,8 +71,9 @@ services:
     - "8600:53/udp"
 
   web:
-    command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --enable_stats=true  --selector=cache --web_cors=* web
-    image: microhq/micro
+    command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --enable_stats=true  --selector=cache --web_cors=* --broker=nats --broker_address=nats:4222 --transport=tcp web 
+    # image: microhq/micro
+    image: go-micro-tech-talk/micro
     networks:
       - go-micro-tech-talk
     links:
@@ -82,8 +83,9 @@ services:
     - "8082:8082"
 
   api:
-    command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --api_namespace=com.go-micro-tech-talk.api api --handler=proxy
-    image: microhq/micro
+    command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --api_namespace=com.go-micro-tech-talk.api --broker=nats --broker_address=nats:4222 --transport=tcp api --handler=proxy
+    # image: microhq/micro
+    image: go-micro-tech-talk/micro
     networks:
       - go-micro-tech-talk
     links:
@@ -93,4 +95,4 @@ services:
 
 networks:
   go-micro-tech-talk:
-    external: true
+    driver: bridge

@@ -13,7 +13,7 @@ const (
 
 	INDEX_FLIGHT_QUEUE string = "index-flights"
 
-	FLIGTHS_DATA_ORIGIN string = "http://127.0.0.1:4004/"
+	FLIGTHS_DATA_ORIGIN string = "http://static-server:80/" // If run from containers
 	DB_URL              string = "http://elasticsearch:9200"
 
 	DEFAULT string = "default"
